@@ -1,11 +1,15 @@
 import express from "express";
 import "express-async-errors";
 import dotenv from "dotenv";
+import { connect } from "node:http2";
+import connectDB from "./src/config/db.js";
 
 dotenv.config();
+connectDB();
 
 const app = express();
 app.use(express.json());
+
 
 app.get("/", (req, res) => {
   res.json({ message: "API running" });
