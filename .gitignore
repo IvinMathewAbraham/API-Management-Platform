@@ -1,4 +1,6 @@
 PRD.md
 TDD.md
 .env
+.DS_Store
+.vscode/
 node_modules/
