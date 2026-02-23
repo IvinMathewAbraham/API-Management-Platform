@@ -1,5 +1,6 @@
 import express from "express";
 import "express-async-errors";
+import authRoutes from "./src/routes/authRoutes.js";
 
 const app = express();
 
@@ -11,8 +12,8 @@ app.get("/", (req, res) => {
   res.json({ message: "API running" });
 });
 
-// Routes (mounted here as they are built)
-// app.use("/auth", authRoutes);
+// Routes
+app.use("/auth", authRoutes);
 // app.use("/apikey", apiKeyRoutes);
 // app.use("/api/v1", publicRoutes);
 // app.use("/dashboard", dashboardRoutes);
