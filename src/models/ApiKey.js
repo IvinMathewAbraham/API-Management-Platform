@@ -1,25 +1,34 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
+// SHA256 is deterministic — lets us look up a key by its hash in O(1).
+// bcrypt is intentionally non-deterministic (random salt), so it cannot be
+// used for lookup without scanning every row; it is appropriate only for
+// passwords. API keys must use a stable hash like SHA256.
+
+const hashKey = (rawKey) => crypto.createHash("sha256").update(rawKey).digest("hex");
+
 const apiKeySchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     keyHash: { type: String, required: true, unique: true },
-    status: { type: String, enum: ["active", "revoked"], default: "active" }
+    status: { type: String, enum: ["active", "revoked"], default: "active" },
   },
   { timestamps: true }
-); 
+);
 
+// Returns the raw key (shown to the developer once). Only the hash is persisted.
 apiKeySchema.statics.generateKey = async function (userId) {
-  const rawKey = `${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  const keyHash = await bcrypt.hash(rawKey, 10);
+  const rawKey = crypto.randomBytes(32).toString("hex");
+  const keyHash = hashKey(rawKey);
   await this.create({ userId, keyHash });
   return rawKey;
 };
 
+// Returns the ApiKey document if valid, or null.
 apiKeySchema.statics.validateKey = async function (rawKey) {
-  const keyHash = await bcrypt.hash(rawKey, 10);
-  const apiKey = await this.findOne({ keyHash, status: "active" });
-  return !!apiKey;
+  const keyHash = hashKey(rawKey);
+  return this.findOne({ keyHash, status: "active" }).populate("userId");
 };
 
 export default mongoose.model("ApiKey", apiKeySchema);

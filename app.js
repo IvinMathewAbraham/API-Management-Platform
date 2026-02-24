@@ -1,6 +1,9 @@
 import express from "express";
 import "express-async-errors";
 import authRoutes from "./src/routes/authRoutes.js";
+import publicRoutes from "./src/routes/publicRoutes.js";
+// import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";   // TODO: implement
+// import dashboardRoutes from "./src/routes/dashboardRoutes.js"; // TODO: implement
 
 const app = express();
 
@@ -14,9 +17,9 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/auth", authRoutes);
-// app.use("/apikey", apiKeyRoutes);
-// app.use("/api/v1", publicRoutes);
-// app.use("/dashboard", dashboardRoutes);
+app.use("/api/v1", publicRoutes);         // quotes, jokes, ... (API key protected)
+// app.use("/apikey", apiKeyRoutes);       // TODO: implement
+// app.use("/dashboard", dashboardRoutes); // TODO: implement
 
 // 404 handler
 app.use((req, res) => {
