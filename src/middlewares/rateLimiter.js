@@ -1,4 +1,4 @@
-import redis from "../config/redis.js";
+import getRedis from "../config/redis.js";
 
 const PLAN_LIMITS = {
   free: 100,
@@ -16,6 +16,7 @@ const getWindowKey = (apiKeyId) => {
 };
 
 const rateLimiter = async (req, res, next) => {
+  const redis = getRedis();
   const apiKeyId = req.apiKey._id.toString();
   const plan = req.user.plan || "free";
   const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
