@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — API Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/dashboard.html" class="text-xl font-bold text-indigo-600">API Platform</a>
+      <div class="flex items-center gap-6">
+        <a href="/dashboard.html" class="nav-link active text-sm font-medium text-indigo-600">Dashboard</a>
+        <a href="/keys.html" class="nav-link text-sm font-medium text-gray-500 hover:text-gray-700">API Keys</a>
+        <a href="/playground.html" class="nav-link text-sm font-medium text-gray-500 hover:text-gray-700">Playground</a>
+        <div class="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200">
+          <span id="user-name" class="text-sm text-gray-600"></span>
+          <button id="logout-btn"
+            class="text-sm text-red-500 hover:text-red-700 font-medium">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Usage Dashboard</h2>
+
+    <div id="dashboard-error" class="hidden mb-6 p-4 rounded-lg bg-red-50 text-red-700"></div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Plan -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Current Plan</p>
+        <span id="plan-badge" class="inline-block px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">—</span>
+      </div>
+      <!-- Total Requests -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Total Requests</p>
+        <p id="total-requests" class="text-3xl font-bold text-gray-800">—</p>
+      </div>
+      <!-- This Hour -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Requests This Hour</p>
+        <p id="requests-hour" class="text-3xl font-bold text-gray-800">—</p>
+      </div>
+      <!-- Remaining -->
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Remaining This Hour</p>
+        <p class="text-3xl font-bold text-gray-800">
+          <span id="remaining">—</span>
+          <span class="text-base font-normal text-gray-400"> / <span id="limit">—</span></span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Usage Bar -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <p class="text-sm font-medium text-gray-600 mb-3">Hourly Usage</p>
+      <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div id="usage-bar" class="h-full rounded-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
