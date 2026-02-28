@@ -1,0 +1,58 @@
+/* Custom overrides — Tailwind handles 95% of styling via classes */
+
+/* Nav active link indicator */
+.nav-link.active {
+  position: relative;
+}
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #6366f1; /* indigo-500 */
+  border-radius: 1px;
+}
+
+/* Copy button click animation */
+#copy-btn {
+  transition: transform 0.1s ease;
+}
+#copy-btn:active {
+  transform: scale(0.95);
+}
+
+/* Code block scrollbar */
+pre::-webkit-scrollbar {
+  height: 6px;
+}
+pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+pre::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+
+/* Fade-in for alerts */
+#key-alert,
+#error-box,
+#pg-error,
+#gen-error,
+#dashboard-error {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive nav — stack on small screens */
+@media (max-width: 640px) {
+  nav .flex.items-center.gap-6 {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
