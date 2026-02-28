@@ -65,6 +65,41 @@
         <div id="usage-bar" class="h-full rounded-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
       </div>
     </div>
+
+    <!-- Plan Management -->
+    <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Manage Plan</h3>
+      <div id="plan-error" class="hidden mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-sm"></div>
+      <div id="plan-success" class="hidden mb-4 p-3 rounded-lg bg-green-50 text-green-700 text-sm"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Free Plan Card -->
+        <div id="plan-free-card" class="border-2 rounded-xl p-5 transition cursor-pointer hover:shadow-md border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-base font-bold text-gray-800">Free</h4>
+            <span id="free-check" class="hidden text-green-600 text-sm font-semibold">&#10003; Current</span>
+          </div>
+          <p class="text-sm text-gray-500 mb-3">100 requests / hour</p>
+          <p class="text-2xl font-bold text-gray-800">$0<span class="text-sm font-normal text-gray-400">/mo</span></p>
+          <button id="select-free-btn"
+            class="mt-4 w-full py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            Select Free
+          </button>
+        </div>
+        <!-- Pro Plan Card -->
+        <div id="plan-pro-card" class="border-2 rounded-xl p-5 transition cursor-pointer hover:shadow-md border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-base font-bold text-gray-800">Pro</h4>
+            <span id="pro-check" class="hidden text-green-600 text-sm font-semibold">&#10003; Current</span>
+          </div>
+          <p class="text-sm text-gray-500 mb-3">1,000 requests / hour</p>
+          <p class="text-2xl font-bold text-gray-800">$19<span class="text-sm font-normal text-gray-400">/mo</span></p>
+          <button id="select-pro-btn"
+            class="mt-4 w-full py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            Upgrade to Pro
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="/js/api.js"></script>
