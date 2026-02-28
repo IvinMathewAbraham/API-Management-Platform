@@ -1,4 +1,4 @@
-import { generateKey, getUserKeys } from "../services/apiKeyService.js";
+import { generateKey, getUserKeys, revokeKey } from "../services/apiKeyService.js";
 
 export const generateApiKey = async (req, res) => {
   const rawKey = await generateKey(req.user._id);
@@ -11,4 +11,9 @@ export const generateApiKey = async (req, res) => {
 export const getMyKeys = async (req, res) => {
   const keys = await getUserKeys(req.user._id);
   res.status(200).json({ keys });
+};
+
+export const revokeApiKey = async (req, res) => {
+  const key = await revokeKey(req.params.id, req.user._id);
+  res.status(200).json({ message: "API key revoked", keyId: key._id });
 };
