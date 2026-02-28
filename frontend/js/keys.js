@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await apiGet("/apikey/me");
       keysBody.innerHTML = "";
       if (data.keys.length === 0) {
-        keysBody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-400">No API keys yet. Generate one above.</td></tr>`;
+        keysBody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-400">No API keys yet. Generate one above.</td></tr>`;
         return;
       }
       data.keys.forEach((k) => {
@@ -27,12 +27,34 @@ document.addEventListener("DOMContentLoaded", async () => {
           k.status === "active"
             ? "bg-green-100 text-green-700"
             : "bg-red-100 text-red-700";
+        const revokeBtn =
+          k.status === "active"
+            ? `<button class="revoke-btn text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition" data-id="${k._id}">Revoke</button>`
+            : `<span class="text-xs text-gray-400">—</span>`;
         tr.innerHTML = `
           <td class="px-6 py-4 font-mono text-sm text-gray-600">${k._id}</td>
           <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${k.status}</span></td>
           <td class="px-6 py-4 text-sm text-gray-500">${new Date(k.createdAt).toLocaleString()}</td>
+          <td class="px-6 py-4">${revokeBtn}</td>
         `;
         keysBody.appendChild(tr);
+      });
+
+      // Attach revoke handlers
+      keysBody.querySelectorAll(".revoke-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const keyId = btn.dataset.id;
+          if (!confirm("Revoke this API key? This cannot be undone.")) return;
+          btn.disabled = true;
+          btn.textContent = "Revoking…";
+          try {
+            await apiPatch(`/apikey/${keyId}/revoke`);
+            await loadKeys();
+          } catch (err) {
+            genError.textContent = err.message;
+            genError.classList.remove("hidden");
+          }
+        });
       });
     } catch (err) {
       genError.textContent = err.message;

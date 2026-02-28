@@ -77,3 +77,25 @@ async function apiGet(url, extraHeaders = {}) {
 
   return data;
 }
+
+async function apiPatch(url, body = {}) {
+  const headers = { "Content-Type": "application/json" };
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}${url}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    window.location.href = "/index.html";
+    throw new Error("Session expired");
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw { status: res.status, message: data.message || "Request failed" };
+  return data;
+}
