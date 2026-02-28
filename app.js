@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import "express-async-errors";
 import authRoutes from "./src/routes/authRoutes.js";
 import publicRoutes from "./src/routes/publicRoutes.js";
@@ -6,6 +7,14 @@ import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 
 const app = express();
+
+// CORS
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining"],
+  })
+);
 
 // Body parsing
 app.use(express.json());
