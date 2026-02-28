@@ -20,7 +20,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("logout-btn").classList.add("hidden");
   }
 
-  function showResult(data) {
+  function syntaxHighlight(json) {
+    const str = JSON.stringify(json, null, 2);
+    return str.replace(
+      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      (match) => {
+        let cls = "json-number";    // number
+        if (/^"/.test(match)) {
+          cls = /:$/.test(match) ? "json-key" : "json-string";
+        } else if (/true|false/.test(match)) {
+          cls = "json-boolean";
+        } else if (/null/.test(match)) {
+          cls = "json-null";
+        }
+        return `<span class="${cls}">${match}</span>`;
+      }
+    );
+  }
+
+  function showResult(data, endpoint) {
     errorBox.classList.add("hidden");
     resultBox.classList.remove("hidden");
 
@@ -30,17 +48,28 @@ document.addEventListener("DOMContentLoaded", () => {
     delete data._rateLimitLimit;
     delete data._rateLimitRemaining;
 
-    resultPre.textContent = JSON.stringify(data, null, 2);
+    // Update response header
+    document.getElementById("resp-endpoint").textContent = endpoint;
+    resultPre.innerHTML = syntaxHighlight(data);
+
+    const rateInfoBar = document.getElementById("rate-info-bar");
+    const rateBar = document.getElementById("rate-bar");
 
     if (limit !== null && remaining !== null) {
-      rateInfo.textContent = `${remaining} requests remaining of ${limit} this hour`;
-      rateInfo.classList.remove("hidden");
+      const used = limit - remaining;
       const pct = limit > 0 ? (remaining / limit) * 100 : 100;
-      rateInfo.className = `mt-3 text-sm font-medium ${
-        pct < 20 ? "text-red-600" : pct < 50 ? "text-yellow-600" : "text-green-600"
+      rateInfo.textContent = `${remaining} / ${limit} remaining`;
+      rateInfoBar.classList.remove("hidden");
+      rateBar.style.width = `${pct}%`;
+      // Color the mini bar based on remaining %
+      rateBar.className = `h-full rounded-full transition-all duration-500 ${
+        pct < 20 ? "bg-red-500" : pct < 50 ? "bg-amber-400" : "bg-emerald-500"
+      }`;
+      rateInfo.className = `text-xs font-medium whitespace-nowrap ${
+        pct < 20 ? "text-red-600" : pct < 50 ? "text-amber-600" : "text-gray-500"
       }`;
     } else {
-      rateInfo.classList.add("hidden");
+      rateInfoBar.classList.add("hidden");
     }
   }
 
@@ -59,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     try {
       const data = await apiGet(endpoint, { "x-api-key": key });
-      showResult(data);
+      showResult(data, endpoint);
     } catch (err) {
       if (err.status === 429) {
         showError("Rate limit exceeded. Try again next hour.");
@@ -68,6 +97,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
+  // Copy response button
+  document.getElementById("copy-response-btn").addEventListener("click", () => {
+    const text = resultPre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const label = document.getElementById("copy-response-label");
+      label.textContent = "Copied!";
+      setTimeout(() => (label.textContent = "Copy"), 2000);
+    });
+  });
 
   quoteBtn.addEventListener("click", () => callApi("/api/v1/quotes"));
   jokeBtn.addEventListener("click", () => callApi("/api/v1/jokes"));

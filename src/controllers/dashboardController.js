@@ -1,25 +1,20 @@
 import ApiLog from "../models/ApiLog.js";
-
-const PLAN_LIMITS = {
-  free: 100,
-  pro: 1000,
-};
+import getRedis from "../config/redis.js";
+import { getWindowKey, PLAN_LIMITS } from "../middlewares/rateLimiter.js";
 
 export const getUsage = async (req, res) => {
   const userId = req.user._id;
   const plan = req.user.plan || "free";
   const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
 
-  // Start of the current UTC hour
-  const now = new Date();
-  const hourStart = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours())
-  );
+  const redis = getRedis();
+  const key = getWindowKey(userId.toString());
 
-  const [totalRequests, requestsThisHour] = await Promise.all([
-    ApiLog.countDocuments({ userId }),
-    ApiLog.countDocuments({ userId, createdAt: { $gte: hourStart } }),
-  ]);
+  // Read the same Redis counter the rate limiter uses
+  const redisCount = await redis.get(key);
+  const requestsThisHour = redisCount ? parseInt(redisCount, 10) : 0;
+
+  const totalRequests = await ApiLog.countDocuments({ userId });
 
   const remaining = Math.max(0, limit - requestsThisHour);
 

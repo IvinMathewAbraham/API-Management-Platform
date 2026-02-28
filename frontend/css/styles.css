@@ -35,6 +35,37 @@ pre::-webkit-scrollbar-thumb {
   border-radius: 3px;
 }
 
+/* ── JSON syntax highlighting ────────── */
+.json-output {
+  color: #e5e7eb;           /* gray-200 base */
+  line-height: 1.7;
+}
+.json-key {
+  color: #93c5fd;           /* blue-300  */
+}
+.json-string {
+  color: #86efac;           /* green-300 */
+}
+.json-number {
+  color: #fca5a5;           /* red-300   */
+}
+.json-boolean {
+  color: #c4b5fd;           /* violet-300 */
+}
+.json-null {
+  color: #9ca3af;           /* gray-400   */
+  font-style: italic;
+}
+
+/* Response block entrance */
+#result-box {
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Fade-in for alerts */
 #key-alert,
 #error-box,

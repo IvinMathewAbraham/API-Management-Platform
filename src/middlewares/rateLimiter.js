@@ -1,27 +1,31 @@
 import getRedis from "../config/redis.js";
 
-const PLAN_LIMITS = {
+export const PLAN_LIMITS = {
   free: 100,
   pro: 1000,
 };
 
-const getWindowKey = (apiKeyId) => {
+export const getRateWindow = () => {
   const now = new Date();
-  const window =
+  return (
     now.getUTCFullYear().toString() +
     String(now.getUTCMonth() + 1).padStart(2, "0") +
     String(now.getUTCDate()).padStart(2, "0") +
-    String(now.getUTCHours()).padStart(2, "0");
-  return `rate:${apiKeyId}:${window}`;
+    String(now.getUTCHours()).padStart(2, "0")
+  );
+};
+
+export const getWindowKey = (userId) => {
+  return `rate:${userId}:${getRateWindow()}`;
 };
 
 const rateLimiter = async (req, res, next) => {
   const redis = getRedis();
-  const apiKeyId = req.apiKey._id.toString();
+  const userId = req.user._id.toString();
   const plan = req.user.plan || "free";
   const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
 
-  const key = getWindowKey(apiKeyId);
+  const key = getWindowKey(userId);
   const count = await redis.incr(key);
 
   if (count === 1) {
