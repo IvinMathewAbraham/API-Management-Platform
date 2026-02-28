@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { getRandomQuote, getRandomJoke } from "../controllers/contentController.js";
-// TODO: add apiKeyMiddleware, rateLimiter, usageLogger once implemented
-// import apiKeyMiddleware from "../middlewares/apiKeyMiddleware.js";
-// import rateLimiter from "../middlewares/rateLimiter.js";
-// import usageLogger from "../middlewares/usageLogger.js";
+import apiKeyMiddleware from "../middlewares/apiKeyMiddleware.js";
+import rateLimiter from "../middlewares/rateLimiter.js";
+import usageLogger from "../middlewares/usageLogger.js";
 
 const router = Router();
 
@@ -11,7 +10,7 @@ const router = Router();
 //   apiKeyMiddleware → rateLimiter → usageLogger → controller
 // Expanding to new content types only requires adding a route below.
 
-// router.use(apiKeyMiddleware, rateLimiter, usageLogger);
+router.use(apiKeyMiddleware, rateLimiter, usageLogger);
 
 router.get("/quotes", getRandomQuote);
 router.get("/jokes", getRandomJoke);
