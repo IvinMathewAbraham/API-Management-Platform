@@ -1,12 +1,21 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import "express-async-errors";
 import authRoutes from "./src/routes/authRoutes.js";
 import publicRoutes from "./src/routes/publicRoutes.js";
 import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
 
 const app = express();
+
+// Security headers
+app.use(helmet());
+
+// Request logging
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // CORS
 app.use(
@@ -29,6 +38,7 @@ app.use("/auth", authRoutes);
 app.use("/api/v1", publicRoutes);         // quotes, jokes, ... (API key protected)
 app.use("/apikey", apiKeyRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/user", userRoutes);
 
 // 404 handler
 app.use((req, res) => {
