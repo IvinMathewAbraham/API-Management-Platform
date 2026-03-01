@@ -6,3 +6,9 @@ UI-DESIGN-PLAN.md
 .DS_Store
 .vscode/
 node_modules/
+dist/
+build/
+coverage/
+
+jenkins-*
+Jenkinsfile

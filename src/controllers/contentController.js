@@ -8,8 +8,8 @@ export const getRandomQuote = async (req, res) => {
     return res.status(404).json({ message: "No quotes found. Seed the database first." });
   }
   const random = Math.floor(Math.random() * count);
-  const quote = await Quote.findOne().skip(random);
-  res.json(quote);
+  const quote = await Quote.findOne().skip(random).select("text author category -_id");
+  res.json({ text: quote.text, author: quote.author, category: quote.category });
 };
 
 // GET /api/v1/jokes  — returns one random joke from MongoDB
@@ -19,6 +19,6 @@ export const getRandomJoke = async (req, res) => {
     return res.status(404).json({ message: "No jokes found. Seed the database first." });
   }
   const random = Math.floor(Math.random() * count);
-  const joke = await Joke.findOne().skip(random);
-  res.json(joke);
+  const joke = await Joke.findOne().skip(random).select("setup punchline category -_id");
+  res.json({ setup: joke.setup, punchline: joke.punchline, category: joke.category });
 };
