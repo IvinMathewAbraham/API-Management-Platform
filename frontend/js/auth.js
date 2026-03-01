@@ -13,17 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showTab(tab) {
     if (tab === "register") {
-      registerTab.classList.add("border-indigo-500", "text-indigo-600");
-      registerTab.classList.remove("border-transparent", "text-gray-500");
-      loginTab.classList.remove("border-indigo-500", "text-indigo-600");
-      loginTab.classList.add("border-transparent", "text-gray-500");
+      registerTab.classList.add("border-sky-500", "text-sky-600");
+      registerTab.classList.remove("border-transparent", "text-slate-500");
+      loginTab.classList.remove("border-sky-500", "text-sky-600");
+      loginTab.classList.add("border-transparent", "text-slate-500");
       registerForm.classList.remove("hidden");
       loginForm.classList.add("hidden");
     } else {
-      loginTab.classList.add("border-indigo-500", "text-indigo-600");
-      loginTab.classList.remove("border-transparent", "text-gray-500");
-      registerTab.classList.remove("border-indigo-500", "text-indigo-600");
-      registerTab.classList.add("border-transparent", "text-gray-500");
+      loginTab.classList.add("border-sky-500", "text-sky-600");
+      loginTab.classList.remove("border-transparent", "text-slate-500");
+      registerTab.classList.remove("border-sky-500", "text-sky-600");
+      registerTab.classList.add("border-transparent", "text-slate-500");
       loginForm.classList.remove("hidden");
       registerForm.classList.add("hidden");
     }
