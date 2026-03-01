@@ -11,8 +11,9 @@
   left: 0;
   right: 0;
   height: 2px;
-  background-color: #6366f1; /* indigo-500 */
+  background-color: #0ea5e9; /* sky-500 */
   border-radius: 1px;
+  transition: all 0.2s ease;
 }
 
 /* Copy button click animation */
@@ -80,10 +81,66 @@ pre::-webkit-scrollbar-thumb {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive nav — stack on small screens */
+/* ── Staggered card fade-in on dashboard ── */
+.stat-card {
+  opacity: 0;
+  animation: cardFadeIn 0.4s ease forwards;
+}
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Count-up transition helper ── */
+[data-countup] {
+  display: inline-block;
+}
+
+/* ── Table row hover ── */
+#keys-body tr {
+  transition: background-color 0.15s ease;
+}
+#keys-body tr:hover {
+  background-color: #f8fafc; /* slate-50 */
+}
+
+/* ── Nav underline smooth transition ── */
+.nav-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: transparent;
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
+
+/* ── Mobile menu slide animation ── */
+#mobile-menu > div:last-child {
+  animation: slideInRight 0.2s ease;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ── Button press feedback ── */
+button {
+  transition: all 0.15s ease;
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Responsive nav — hide on small screens (hamburger takes over) */
 @media (max-width: 640px) {
-  nav .flex.items-center.gap-6 {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  nav .hidden.sm\:flex {
+    display: none !important;
   }
 }
