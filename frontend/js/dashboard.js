@@ -3,61 +3,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const user = getUser();
   document.getElementById("user-name").textContent = user?.name || "User";
+  const mobileUserName = document.getElementById("mobile-user-name");
+  if (mobileUserName) mobileUserName.textContent = user?.name || "User";
   document.getElementById("logout-btn").addEventListener("click", logout);
 
-  // ── Plan management elements ────────
-  const planFreeCard = document.getElementById("plan-free-card");
-  const planProCard = document.getElementById("plan-pro-card");
-  const freeCheck = document.getElementById("free-check");
-  const proCheck = document.getElementById("pro-check");
-  const selectFreeBtn = document.getElementById("select-free-btn");
-  const selectProBtn = document.getElementById("select-pro-btn");
-  const planError = document.getElementById("plan-error");
-  const planSuccess = document.getElementById("plan-success");
-
-  function highlightPlanCards(plan) {
-    if (plan === "free") {
-      planFreeCard.classList.replace("border-gray-200", "border-indigo-500");
-      planProCard.classList.replace("border-indigo-500", "border-gray-200");
-      freeCheck.classList.remove("hidden");
-      proCheck.classList.add("hidden");
-      selectFreeBtn.disabled = true;
-      selectFreeBtn.textContent = "Current Plan";
-      selectProBtn.disabled = false;
-      selectProBtn.textContent = "Upgrade to Pro";
-    } else {
-      planProCard.classList.replace("border-gray-200", "border-indigo-500");
-      planFreeCard.classList.replace("border-indigo-500", "border-gray-200");
-      proCheck.classList.remove("hidden");
-      freeCheck.classList.add("hidden");
-      selectProBtn.disabled = true;
-      selectProBtn.textContent = "Current Plan";
-      selectFreeBtn.disabled = false;
-      selectFreeBtn.textContent = "Switch to Free";
+  // ── Count-up animation ──────────────
+  function animateCountUp(el, target) {
+    const duration = 600;
+    const start = performance.now();
+    const from = 0;
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(from + (target - from) * eased);
+      el.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(tick);
     }
+    requestAnimationFrame(tick);
   }
-
-  async function changePlan(newPlan) {
-    planError.classList.add("hidden");
-    planSuccess.classList.add("hidden");
-    try {
-      const data = await apiPatch("/user/plan", { plan: newPlan });
-      // Update localStorage with new user info
-      const updatedUser = data.user;
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      highlightPlanCards(newPlan);
-      planSuccess.textContent = `Plan updated to ${newPlan.toUpperCase()} successfully!`;
-      planSuccess.classList.remove("hidden");
-      // Refresh usage stats to reflect new limits
-      await loadUsage();
-    } catch (err) {
-      planError.textContent = err.message;
-      planError.classList.remove("hidden");
-    }
-  }
-
-  selectFreeBtn.addEventListener("click", () => changePlan("free"));
-  selectProBtn.addEventListener("click", () => changePlan("pro"));
 
   // ── Usage stats ─────────────────────
   async function loadUsage() {
@@ -66,24 +31,50 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("plan-badge").textContent = data.plan.toUpperCase();
       document.getElementById("plan-badge").className =
         data.plan === "pro"
-          ? "inline-block px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800"
-          : "inline-block px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800";
+          ? "inline-block px-3 py-1 text-sm font-semibold rounded-full bg-amber-100 text-amber-800"
+          : "inline-block px-3 py-1 text-sm font-semibold rounded-full bg-slate-100 text-slate-800";
 
-      document.getElementById("total-requests").textContent = data.totalRequests;
-      document.getElementById("requests-hour").textContent = data.requestsThisHour;
-      document.getElementById("remaining").textContent = data.remaining;
+      // Animate stat numbers
+      const totalEl = document.getElementById("total-requests");
+      const hourEl = document.getElementById("requests-hour");
+      const remainEl = document.getElementById("remaining");
+      animateCountUp(totalEl, data.totalRequests);
+      animateCountUp(hourEl, data.requestsThisHour);
+      animateCountUp(remainEl, data.remaining);
       document.getElementById("limit").textContent = data.limit;
 
       // Progress bar
       const pct = data.limit > 0 ? Math.round((data.requestsThisHour / data.limit) * 100) : 0;
       const bar = document.getElementById("usage-bar");
       bar.style.width = `${Math.min(pct, 100)}%`;
-      bar.className = `h-full rounded-full transition-all duration-500 ${
-        pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-green-500"
+      bar.className = `h-full rounded-full transition-all duration-700 ease-out flex items-center justify-center ${
+        pct > 85 ? "bg-red-500" : pct > 60 ? "bg-amber-500" : "bg-emerald-500"
       }`;
 
-      // Highlight current plan card
-      highlightPlanCards(data.plan);
+      // Show percentage label inside bar when > 15%
+      const barLabel = document.getElementById("usage-bar-label");
+      if (barLabel) {
+        barLabel.textContent = pct > 15 ? `${pct}%` : "";
+      }
+
+      // Show percentage next to bar title
+      const usagePct = document.getElementById("usage-pct");
+      if (usagePct) {
+        usagePct.textContent = `${pct}%`;
+        usagePct.className = `text-sm font-semibold ${
+          pct > 85 ? "text-red-600" : pct > 60 ? "text-amber-600" : "text-slate-500"
+        }`;
+      }
+
+      // Show upgrade CTA for free plan users
+      const upgradeCta = document.getElementById("upgrade-cta");
+      if (upgradeCta) {
+        if (data.plan === "free") {
+          upgradeCta.classList.remove("hidden");
+        } else {
+          upgradeCta.classList.add("hidden");
+        }
+      }
     } catch (err) {
       document.getElementById("dashboard-error").textContent = err.message;
       document.getElementById("dashboard-error").classList.remove("hidden");
