@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plans — API Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/dashboard.html" class="text-xl font-bold text-slate-800 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+        API Platform
+      </a>
+      <!-- Desktop Nav -->
+      <div class="hidden sm:flex items-center gap-6">
+        <a href="/dashboard.html" class="nav-link text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">Dashboard</a>
+        <a href="/keys.html" class="nav-link text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">API Keys</a>
+        <a href="/plans.html" class="nav-link active text-sm font-medium text-sky-600">Plans</a>
+        <a href="/playground.html" class="nav-link text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">Playground</a>
+        <div class="flex items-center gap-3 ml-4 pl-4 border-l border-slate-200">
+          <span id="user-name" class="text-sm text-slate-600"></span>
+          <button id="logout-btn"
+            class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors">Logout</button>
+        </div>
+      </div>
+      <!-- Mobile Hamburger -->
+      <button id="mobile-menu-btn" class="sm:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/20" onclick="closeMobileMenu()"></div>
+    <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-xl p-6 transform transition-transform">
+      <div class="flex justify-end mb-6">
+        <button onclick="closeMobileMenu()" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flex flex-col gap-3">
+        <span id="mobile-user-name" class="text-sm font-medium text-slate-800 mb-2"></span>
+        <a href="/dashboard.html" class="text-sm font-medium text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition">Dashboard</a>
+        <a href="/keys.html" class="text-sm font-medium text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition">API Keys</a>
+        <a href="/plans.html" class="text-sm font-medium text-sky-600 bg-sky-50 px-3 py-2 rounded-lg">Plans</a>
+        <a href="/playground.html" class="text-sm font-medium text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition">Playground</a>
+        <hr class="border-slate-200 my-2" />
+        <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700 font-medium text-left px-3 py-2">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Plans &amp; Pricing</h2>
+      <p class="text-slate-500">Choose the plan that fits your needs. Upgrade or downgrade at any time.</p>
+    </div>
+
+    <!-- Alerts -->
+    <div id="plan-error" class="hidden mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm"></div>
+    <div id="plan-success" class="hidden mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"></div>
+
+    <!-- Plan Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+      <!-- Free Plan Card -->
+      <div id="plan-free-card" class="border-2 rounded-xl p-6 transition-all border-slate-200 bg-white shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-800">Free</h3>
+          <span id="free-check" class="hidden text-emerald-600 text-sm font-semibold">&#10003; Current</span>
+        </div>
+        <p class="text-3xl font-bold text-slate-800 mb-1">$0<span class="text-base font-normal text-slate-400">/mo</span></p>
+        <p class="text-sm text-slate-500 mb-6">Great for getting started</p>
+        <ul class="space-y-3 mb-8 flex-1">
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            100 requests per hour
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Access to all endpoints
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Usage dashboard
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            API key management
+          </li>
+        </ul>
+        <button id="select-free-btn"
+          class="w-full py-2.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Select Free
+        </button>
+      </div>
+
+      <!-- Pro Plan Card -->
+      <div id="plan-pro-card" class="border-2 rounded-xl p-6 transition-all border-slate-200 bg-white shadow-sm flex flex-col relative overflow-hidden">
+        <!-- Popular badge -->
+        <div class="absolute top-0 right-0 bg-sky-600 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg">Popular</div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-800">Pro</h3>
+          <span id="pro-check" class="hidden text-emerald-600 text-sm font-semibold">&#10003; Current</span>
+        </div>
+        <p class="text-3xl font-bold text-slate-800 mb-1">$19<span class="text-base font-normal text-slate-400">/mo</span></p>
+        <p class="text-sm text-slate-500 mb-6">For serious API consumers</p>
+        <ul class="space-y-3 mb-8 flex-1">
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <strong>1,000</strong>&nbsp;requests per hour
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Access to all endpoints
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Usage dashboard
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            API key management
+          </li>
+          <li class="flex items-start gap-2 text-sm text-slate-600">
+            <svg class="w-4 h-4 mt-0.5 text-sky-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sky-700 font-medium">10x higher rate limit</span>
+          </li>
+        </ul>
+        <button id="select-pro-btn"
+          class="w-full py-2.5 rounded-lg text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 shadow-sm shadow-sky-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          Upgrade to Pro
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/30" onclick="closeConfirmModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 relative z-10">
+        <h3 id="confirm-title" class="text-lg font-bold text-slate-800 mb-2">Confirm Plan Change</h3>
+        <p id="confirm-message" class="text-sm text-slate-600 mb-6"></p>
+        <div class="flex gap-3">
+          <button id="confirm-cancel-btn"
+            class="flex-1 py-2.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50 transition-all"
+            onclick="closeConfirmModal()">
+            Cancel
+          </button>
+          <button id="confirm-ok-btn"
+            class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 shadow-sm shadow-sky-200 transition-all">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/plans.js"></script>
+  <script>
+    // Mobile menu
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.remove('hidden');
+    });
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.add('hidden');
+    }
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
