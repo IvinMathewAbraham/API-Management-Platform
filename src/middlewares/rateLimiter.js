@@ -1,4 +1,6 @@
 import getRedis from "../config/redis.js";
+import ApiLog from "../models/ApiLog.js";
+import crypto from "crypto";
 
 export const PLAN_LIMITS = {
   free: 100,
@@ -39,6 +41,21 @@ const rateLimiter = async (req, res, next) => {
   res.setHeader("X-RateLimit-Remaining", remaining);
 
   if (count > limit) {
+    // Log the 429 to ApiLog so it shows in analytics
+    if (req.user && req.apiKey) {
+      ApiLog.create({
+        userId: req.user._id,
+        apiKeyId: req.apiKey._id,
+        endpoint: req.originalUrl,
+        method: req.method,
+        statusCode: 429,
+        responseTime: 0,
+        ip: req.ip || req.headers["x-forwarded-for"] || null,
+        userAgent: req.get("user-agent") || null,
+        requestId: crypto.randomUUID(),
+      }).catch(() => {});
+    }
+
     return res.status(429).json({
       message: "Rate limit exceeded. Try again next hour.",
       limit,

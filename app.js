@@ -21,16 +21,40 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "*",
-    exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining"],
+    exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-Request-Id"],
   })
 );
 
 // Body parsing
 app.use(express.json());
 
-// Health check
+// Health check (basic)
 app.get("/", (req, res) => {
   res.json({ message: "API running" });
+});
+
+// Rich health endpoint
+import mongoose from "mongoose";
+import getRedis from "./src/config/redis.js";
+
+app.get("/health", async (req, res) => {
+  let redisOk = false;
+  try {
+    const redis = getRedis();
+    const pong = await redis.ping();
+    redisOk = pong === "PONG";
+  } catch { /* ignore */ }
+
+  const dbState = ["disconnected", "connected", "connecting", "disconnecting"];
+
+  res.json({
+    status: "ok",
+    uptime: Math.round(process.uptime()),
+    memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024),
+    db: dbState[mongoose.connection.readyState] || "unknown",
+    redis: redisOk ? "connected" : "disconnected",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Routes
