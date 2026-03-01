@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — API Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -57,39 +58,63 @@
 
   <!-- Content -->
   <main class="max-w-6xl mx-auto px-4 py-8">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">Usage Dashboard</h2>
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">Usage Dashboard</h2>
+      <!-- Time Range Selector -->
+      <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+        <button data-range="24h" class="range-btn px-3 py-1.5 text-xs font-medium rounded-md bg-sky-500 text-white transition-all">24h</button>
+        <button data-range="7d"  class="range-btn px-3 py-1.5 text-xs font-medium rounded-md text-slate-500 hover:bg-slate-50 transition-all">7d</button>
+        <button data-range="30d" class="range-btn px-3 py-1.5 text-xs font-medium rounded-md text-slate-500 hover:bg-slate-50 transition-all">30d</button>
+      </div>
+    </div>
 
     <div id="dashboard-error" class="hidden mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700"></div>
 
-    <!-- Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Stat Cards - Row 1 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
       <!-- Plan -->
-      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-6 border-l-4 border-l-sky-500" style="animation-delay: 0ms">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Current Plan</p>
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-sky-500" style="animation-delay: 0ms">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Plan</p>
         <span id="plan-badge" class="inline-block px-3 py-1 text-sm font-semibold rounded-full bg-slate-100 text-slate-800">—</span>
       </div>
       <!-- Total Requests -->
-      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-6 border-l-4 border-l-emerald-500" style="animation-delay: 50ms">
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-emerald-500" style="animation-delay: 50ms">
         <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Total Requests</p>
-        <p id="total-requests" class="text-3xl font-bold text-slate-800" data-countup>—</p>
+        <p id="total-requests" class="text-2xl font-bold text-slate-800" data-countup>—</p>
       </div>
       <!-- This Hour -->
-      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-6 border-l-4 border-l-amber-500" style="animation-delay: 100ms">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Requests This Hour</p>
-        <p id="requests-hour" class="text-3xl font-bold text-slate-800" data-countup>—</p>
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-amber-500" style="animation-delay: 100ms">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">This Hour</p>
+        <p id="requests-hour" class="text-2xl font-bold text-slate-800" data-countup>—</p>
       </div>
       <!-- Remaining -->
-      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-6 border-l-4 border-l-slate-300" style="animation-delay: 150ms">
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Remaining This Hour</p>
-        <p class="text-3xl font-bold text-slate-800">
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-slate-300" style="animation-delay: 150ms">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Remaining</p>
+        <p class="text-2xl font-bold text-slate-800">
           <span id="remaining" data-countup>—</span>
-          <span class="text-base font-normal text-slate-400"> / <span id="limit">—</span></span>
+          <span class="text-sm font-normal text-slate-400">/ <span id="limit">—</span></span>
+        </p>
+      </div>
+      <!-- Avg Latency -->
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-violet-500" style="animation-delay: 200ms">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Avg Latency</p>
+        <p class="text-2xl font-bold text-slate-800">
+          <span id="avg-latency" data-countup>—</span>
+          <span class="text-sm font-normal text-slate-400">ms</span>
+        </p>
+      </div>
+      <!-- Error Rate -->
+      <div class="stat-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 border-l-4 border-l-red-500" style="animation-delay: 250ms">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Error Rate</p>
+        <p class="text-2xl font-bold text-slate-800">
+          <span id="error-rate">—</span>
+          <span class="text-sm font-normal text-slate-400">%</span>
         </p>
       </div>
     </div>
 
     <!-- Usage Bar -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
       <div class="flex items-center justify-between mb-3">
         <p class="text-sm font-medium text-slate-600">Hourly Usage</p>
         <span id="usage-pct" class="text-sm font-semibold text-slate-500"></span>
@@ -98,6 +123,73 @@
         <div id="usage-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out flex items-center justify-center" style="width: 0%">
           <span id="usage-bar-label" class="text-xs font-semibold text-white drop-shadow-sm"></span>
         </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1: Requests Over Time + Latency Over Time -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-700 mb-4">Requests Over Time</h3>
+        <div style="height: 280px"><canvas id="chart-requests"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-700 mb-4">Latency Over Time</h3>
+        <div style="height: 280px"><canvas id="chart-latency"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2: Status Codes + Top Endpoints -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-700 mb-4">Status Code Distribution</h3>
+        <div style="height: 280px" class="flex items-center justify-center"><canvas id="chart-status"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-sm font-semibold text-slate-700 mb-4">Top Endpoints</h3>
+        <div style="height: 280px"><canvas id="chart-endpoints"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Per-Key Usage Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <h3 class="text-sm font-semibold text-slate-700 mb-4">Per-Key Usage</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
+            <tr>
+              <th class="pb-3 pr-4">Key</th>
+              <th class="pb-3 pr-4">Status</th>
+              <th class="pb-3 pr-4 text-right">Requests</th>
+              <th class="pb-3 pr-4 text-right">Avg Latency</th>
+              <th class="pb-3 text-right">Error Rate</th>
+            </tr>
+          </thead>
+          <tbody id="keys-table-body" class="text-slate-600">
+            <tr><td colspan="5" class="py-6 text-center text-slate-400">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Requests Log -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <h3 class="text-sm font-semibold text-slate-700 mb-4">Recent Requests</h3>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100 sticky top-0 bg-white">
+            <tr>
+              <th class="pb-3 pr-4">Endpoint</th>
+              <th class="pb-3 pr-4">Method</th>
+              <th class="pb-3 pr-4">Status</th>
+              <th class="pb-3 pr-4 text-right">Latency</th>
+              <th class="pb-3 pr-4">IP</th>
+              <th class="pb-3">Time</th>
+            </tr>
+          </thead>
+          <tbody id="recent-table-body" class="text-slate-600">
+            <tr><td colspan="6" class="py-6 text-center text-slate-400">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
