@@ -37,11 +37,29 @@ export default function Plans() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "1") {
       setSuccess("You're now on the Pro plan! It may take a moment to reflect.");
-      // Refresh user data from server so plan badge updates immediately
-      apiGet("/auth/me")
-        .then((data) => { if (data.user) updateUser(data.user); })
-        .catch(() => {});
       window.history.replaceState({}, "", "/plans");
+
+      // Poll until plan updates or max retries reached
+      let attempts = 0;
+      const maxAttempts = 6;
+      const interval = setInterval(async () => {
+        attempts++;
+        try {
+          const data = await apiGet("/auth/me");
+          if (data.user?.plan === "pro") {
+            updateUser(data.user);
+            clearInterval(interval);
+          } else if (attempts >= maxAttempts) {
+            // Force update anyway so UI isn't stuck
+            if (data.user) updateUser(data.user);
+            clearInterval(interval);
+          }
+        } catch {
+          if (attempts >= maxAttempts) clearInterval(interval);
+        }
+      }, 2000); // check every 2s
+
+      return () => clearInterval(interval);
     }
     if (params.get("canceled") === "1") {
       setError("Checkout was canceled. No charges were made.");
