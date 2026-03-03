@@ -3,6 +3,7 @@ import {
   createCheckoutSession,
   createPortalSession,
   constructWebhookEvent,
+  retrieveCheckoutSession,
 } from "../services/stripeService.js";
 
 /**
@@ -37,6 +38,47 @@ export const portal = async (req, res) => {
 
   const session = await createPortalSession({ customerId: user.stripeCustomerId });
   res.json({ url: session.url });
+};
+
+/**
+ * GET /payment/verify-session
+ * Verifies a completed Checkout session by session_id and upgrades the user.
+ * Used as a reliable fallback when webhooks can't reach the server (local dev).
+ */
+export const verifySession = async (req, res) => {
+  const { session_id } = req.query;
+  if (!session_id) return res.status(400).json({ message: "Missing session_id" });
+
+  const session = await retrieveCheckoutSession(session_id);
+
+  if (session.payment_status !== "paid") {
+    return res.status(402).json({ message: "Payment not completed" });
+  }
+
+  const userId = session.metadata?.userId;
+  if (!userId) return res.status(400).json({ message: "Missing userId in session metadata" });
+
+  // Only upgrade if this session belongs to the authenticated user
+  if (userId !== req.user._id.toString()) {
+    return res.status(403).json({ message: "Session does not belong to this user" });
+  }
+
+  await User.findByIdAndUpdate(userId, {
+    plan: "pro",
+    stripeCustomerId: session.customer,
+    stripeSubscriptionId: session.subscription,
+  });
+
+  const user = await User.findById(userId).select("-password");
+  res.json({
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      plan: user.plan,
+      role: user.role,
+    },
+  });
 };
 
 /**

@@ -37,29 +37,47 @@ export default function Plans() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "1") {
       setSuccess("You're now on the Pro plan! It may take a moment to reflect.");
+      const sessionId = params.get("session_id");
       window.history.replaceState({}, "", "/plans");
 
-      // Poll until plan updates or max retries reached
-      let attempts = 0;
-      const maxAttempts = 6;
-      const interval = setInterval(async () => {
-        attempts++;
-        try {
-          const data = await apiGet("/auth/me");
-          if (data.user?.plan === "pro") {
-            updateUser(data.user);
-            clearInterval(interval);
-          } else if (attempts >= maxAttempts) {
-            // Force update anyway so UI isn't stuck
-            if (data.user) updateUser(data.user);
-            clearInterval(interval);
-          }
-        } catch {
-          if (attempts >= maxAttempts) clearInterval(interval);
-        }
-      }, 2000); // check every 2s
+      let cancelled = false;
 
-      return () => clearInterval(interval);
+      (async () => {
+        // 1. Try to verify + upgrade directly via the session_id (works without webhooks)
+        if (sessionId) {
+          try {
+            const data = await apiGet(`/payment/verify-session?session_id=${sessionId}`);
+            if (!cancelled && data.user) {
+              updateUser(data.user);
+              return;
+            }
+          } catch {
+            // Fall through to polling if verify fails
+          }
+        }
+
+        // 2. Fallback: poll /auth/me until plan reflects (webhook may be in flight)
+        let attempts = 0;
+        const maxAttempts = 6;
+        const interval = setInterval(async () => {
+          if (cancelled) { clearInterval(interval); return; }
+          attempts++;
+          try {
+            const data = await apiGet("/auth/me");
+            if (data.user?.plan === "pro") {
+              updateUser(data.user);
+              clearInterval(interval);
+            } else if (attempts >= maxAttempts) {
+              if (data.user) updateUser(data.user);
+              clearInterval(interval);
+            }
+          } catch {
+            if (attempts >= maxAttempts) clearInterval(interval);
+          }
+        }, 2000);
+      })();
+
+      return () => { cancelled = true; };
     }
     if (params.get("canceled") === "1") {
       setError("Checkout was canceled. No charges were made.");
