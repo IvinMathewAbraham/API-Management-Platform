@@ -9,6 +9,7 @@ services:
       - mongo
       - redis
     restart: unless-stopped
+    mem_limit: 512m  
 
   frontend:
     build: ./frontend
@@ -17,6 +18,7 @@ services:
     depends_on:
       - app
     restart: unless-stopped
+    mem_limit: 256m   
 
   mongo:
     image: mongo:7
@@ -25,12 +27,14 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    mem_limit: 1g      
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     restart: unless-stopped
-
+    mem_limit: 256m    
+    
 volumes:
   mongo_data:

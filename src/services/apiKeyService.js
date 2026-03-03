@@ -6,7 +6,7 @@ export const generateKey = async (userId) => {
 };
 
 export const getUserKeys = async (userId) => {
-  return ApiKey.find({ userId }).select("-keyHash").sort({ createdAt: -1 });
+  return ApiKey.find({ userId }).select("_id userId keyPrefix status createdAt").sort({ createdAt: -1 });
 };
 
 export const revokeKey = async (keyId, userId) => {

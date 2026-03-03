@@ -12,6 +12,7 @@ const apiKeySchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     keyHash: { type: String, required: true, unique: true },
+    keyPrefix: { type: String, default: "********" },
     status: { type: String, enum: ["active", "revoked"], default: "active" },
   },
   { timestamps: true }
@@ -21,7 +22,8 @@ const apiKeySchema = new mongoose.Schema(
 apiKeySchema.statics.generateKey = async function (userId) {
   const rawKey = crypto.randomBytes(32).toString("hex");
   const keyHash = hashKey(rawKey);
-  await this.create({ userId, keyHash });
+  const keyPrefix = rawKey.slice(0, 8);
+  await this.create({ userId, keyHash, keyPrefix });
   return rawKey;
 };
 

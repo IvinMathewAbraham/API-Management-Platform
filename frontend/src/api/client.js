@@ -1,39 +1,28 @@
-// Shared API client
-// When served behind nginx proxy, base is "" (same origin).
-// For local dev without nginx, set to "http://localhost:5000".
+// Shared API client — mirrors the original vanilla JS api.js
+// When served behind nginx/vite proxy, base is "" (same origin).
+
 const API_BASE = "";
 
-function getToken() {
+export function getToken() {
   return localStorage.getItem("token");
 }
 
-function getUser() {
+export function getUser() {
   const u = localStorage.getItem("user");
   return u ? JSON.parse(u) : null;
 }
 
-function saveAuth(data) {
+export function saveAuth(data) {
   localStorage.setItem("token", data.token);
   localStorage.setItem("user", JSON.stringify(data.user));
 }
 
-function clearAuth() {
+export function clearAuth() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 }
 
-function requireAuth() {
-  if (!getToken()) {
-    window.location.href = "/index.html";
-  }
-}
-
-function logout() {
-  clearAuth();
-  window.location.href = "/index.html";
-}
-
-async function apiPost(url, body) {
+export async function apiPost(url, body) {
   const headers = { "Content-Type": "application/json" };
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -46,7 +35,8 @@ async function apiPost(url, body) {
 
   if (res.status === 401) {
     clearAuth();
-    window.location.href = "/index.html";
+    // Use a custom event or flag instead of hard navigation
+    window.dispatchEvent(new Event("auth:expired"));
     throw new Error("Session expired");
   }
 
@@ -55,7 +45,7 @@ async function apiPost(url, body) {
   return data;
 }
 
-async function apiGet(url, extraHeaders = {}) {
+export async function apiGet(url, extraHeaders = {}) {
   const headers = { ...extraHeaders };
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -64,7 +54,8 @@ async function apiGet(url, extraHeaders = {}) {
 
   if (res.status === 401 && !extraHeaders["x-api-key"]) {
     clearAuth();
-    window.location.href = "/index.html";
+    // Use a custom event or flag instead of hard navigation
+    window.dispatchEvent(new Event("auth:expired"));
     throw new Error("Session expired");
   }
 
@@ -78,7 +69,7 @@ async function apiGet(url, extraHeaders = {}) {
   return data;
 }
 
-async function apiPatch(url, body = {}) {
+export async function apiPatch(url, body = {}) {
   const headers = { "Content-Type": "application/json" };
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -91,7 +82,27 @@ async function apiPatch(url, body = {}) {
 
   if (res.status === 401) {
     clearAuth();
-    window.location.href = "/index.html";
+    // Use a custom event or flag instead of hard navigation
+    window.dispatchEvent(new Event("auth:expired"));
+    throw new Error("Session expired");
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw { status: res.status, message: data.message || "Request failed" };
+  return data;
+}
+
+export async function apiDelete(url) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}${url}`, { method: "DELETE", headers });
+
+  if (res.status === 401) {
+    clearAuth();
+    // Use a custom event or flag instead of hard navigation
+    window.dispatchEvent(new Event("auth:expired"));
     throw new Error("Session expired");
   }
 

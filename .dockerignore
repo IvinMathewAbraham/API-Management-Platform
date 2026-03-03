@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+*.md
+
+# Development
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-workspace
+.DS_Store
+
+# Testing
+coverage/
+.pytest_cache/
+*.pytest_cache
+
+# Build artifacts
+dist/
+build/
+*.pyc
+__pycache__/
+*.egg-info/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Package managers
+yarn.lock
+Pipfile.lock
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+Dockerfile.dev
