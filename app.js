@@ -8,6 +8,7 @@ import publicRoutes from "./src/routes/publicRoutes.js";
 import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use("/api/v1", publicRoutes);         // quotes, jokes, ... (API key protect
 app.use("/apikey", apiKeyRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/user", userRoutes);
+app.use("/admin", adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

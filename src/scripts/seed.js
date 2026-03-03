@@ -4,6 +4,7 @@ dotenv.config();
 import mongoose from "mongoose";
 import Quote from "../models/Quote.js";
 import Joke from "../models/Joke.js";
+import User from "../models/User.js";
 
 const quotes = [
   { text: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "motivation" },
@@ -72,6 +73,22 @@ async function seed() {
     } else {
       await Joke.insertMany(jokes);
       console.log(`[Seed] Inserted ${jokes.length} jokes`);
+    }
+
+    // Admin user
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@apiplatform.com";
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (existingAdmin) {
+      console.log(`[Seed] Admin user (${adminEmail}) already exists — skipping`);
+    } else {
+      await User.create({
+        name: "Admin",
+        email: adminEmail,
+        password: process.env.ADMIN_PASSWORD || "admin123",
+        role: "admin",
+        plan: "pro",
+      });
+      console.log(`[Seed] Created admin user: ${adminEmail}`);
     }
 
     console.log("[Seed] Done!");
