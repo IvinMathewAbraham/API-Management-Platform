@@ -15,6 +15,7 @@ export default defineConfig({
       "/api": "http://localhost:5000",
       "/admin": "http://localhost:5000",
       "/health": "http://localhost:5000",
+      "/payment": "http://localhost:5000",  // ← add this
     },
   },
 });
