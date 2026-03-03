@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAuth from "../hooks/useAuth.js";
-import { apiPatch } from "../api/client.js";
+import { apiPatch, apiPost, apiGet } from "../api/client.js";
 
 const plans = [
   {
@@ -15,7 +15,7 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: "$29",
+    price: "$19",
     period: "/month",
     description: "For production applications",
     features: ["1,000 requests / hour", "10 API keys", "Advanced analytics", "Priority support", "Webhook notifications"],
@@ -30,20 +30,67 @@ export default function Plans() {
   const [showConfirm, setShowConfirm] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  // Handle Stripe redirect back to /plans
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "1") {
+      setSuccess("You're now on the Pro plan! It may take a moment to reflect.");
+      // Refresh user data from server so plan badge updates immediately
+      apiGet("/auth/me")
+        .then((data) => { if (data.user) updateUser(data.user); })
+        .catch(() => {});
+      window.history.replaceState({}, "", "/plans");
+    }
+    if (params.get("canceled") === "1") {
+      setError("Checkout was canceled. No charges were made.");
+      window.history.replaceState({}, "", "/plans");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function switchPlan(planId) {
-    setSwitching(true);
     setError("");
     setSuccess("");
+
+    // Downgrading to Free — use existing PATCH endpoint
+    if (planId === "free") {
+      setSwitching(true);
+      try {
+        const res = await apiPatch("/user/plan", { plan: planId });
+        updateUser({ ...user, plan: planId });
+        setSuccess(res.message || "Switched to Free plan.");
+        setShowConfirm(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setSwitching(false);
+      }
+      return;
+    }
+
+    // Upgrading to Pro — create Stripe Checkout session and redirect
+    setSwitching(true);
     try {
-      const res = await apiPatch("/user/plan", { plan: planId });
-      updateUser({ ...user, plan: planId });
-      setSuccess(res.message || `Switched to ${planId.toUpperCase()} plan!`);
-      setShowConfirm(null);
+      const res = await apiPost("/payment/checkout", {});
+      if (res.url) window.location.href = res.url;
+    } catch (err) {
+      setError(err.message);
+      setSwitching(false);
+    }
+  }
+
+  async function openBillingPortal() {
+    setPortalLoading(true);
+    setError("");
+    try {
+      const res = await apiPost("/payment/portal", {});
+      if (res.url) window.location.href = res.url;
     } catch (err) {
       setError(err.message);
     } finally {
-      setSwitching(false);
+      setPortalLoading(false);
     }
   }
 
@@ -56,6 +103,23 @@ export default function Plans() {
 
       {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 animate-fade-in">{error}</div>}
       {success && <div className="mb-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 animate-fade-in">{success}</div>}
+
+      {/* Billing portal — only shown to Pro users */}
+      {user?.plan === "pro" && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-amber-800">Manage your subscription</p>
+            <p className="text-xs text-amber-600 mt-0.5">Update payment method, view invoices, or cancel anytime</p>
+          </div>
+          <button
+            onClick={openBillingPortal}
+            disabled={portalLoading}
+            className="shrink-0 px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-all disabled:opacity-50"
+          >
+            {portalLoading ? "Loading..." : "Billing Portal"}
+          </button>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {plans.map((plan) => {
@@ -112,14 +176,18 @@ export default function Plans() {
               {user?.plan === "pro" && showConfirm === "free" ? "Downgrade" : "Upgrade"} to {showConfirm.toUpperCase()}?
             </h3>
             <p className="text-sm text-slate-500 mt-2">
-              {showConfirm === "free" ? "You'll lose access to Pro features. Your rate limit will be reduced." : "You'll get higher rate limits and advanced analytics."}
+              {showConfirm === "pro"
+                ? "You'll be redirected to Stripe to complete your payment securely."
+                : "You'll lose access to Pro features. Your rate limit will be reduced."}
             </p>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowConfirm(null)} disabled={switching} className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors">
                 Cancel
               </button>
               <button onClick={() => switchPlan(showConfirm)} disabled={switching} className="flex-1 py-2.5 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition-all disabled:opacity-50">
-                {switching ? "Switching..." : "Confirm"}
+                {switching
+                  ? showConfirm === "pro" ? "Redirecting..." : "Switching..."
+                  : showConfirm === "pro" ? "Go to Checkout" : "Confirm"}
               </button>
             </div>
           </div>

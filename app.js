@@ -9,6 +9,7 @@ import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
+import paymentRoutes from "./src/routes/paymentRoutes.js";
 
 const app = express();
 
@@ -25,6 +26,11 @@ app.use(
     exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-Request-Id"],
   })
 );
+
+// ⚠️  Payment routes MUST be registered before express.json() so that
+//     the Stripe webhook endpoint receives the raw request body for
+//     signature verification. express.raw() is applied per-route inside paymentRoutes.
+app.use("/payment", paymentRoutes);
 
 // Body parsing
 app.use(express.json());
