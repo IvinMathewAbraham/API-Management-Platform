@@ -38,6 +38,13 @@ export const createPortalSession = async ({ customerId }) => {
 };
 
 /**
+ * Retrieve a Checkout session by ID (used to verify payment without a webhook).
+ */
+export const retrieveCheckoutSession = async (sessionId) => {
+  return stripe.checkout.sessions.retrieve(sessionId);
+};
+
+/**
  * Verify and parse an incoming Stripe webhook payload.
  */
 export const constructWebhookEvent = (rawBody, signature) => {
